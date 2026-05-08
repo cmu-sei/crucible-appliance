@@ -58,7 +58,7 @@ The SSH password is `crucible`. Then you can run normal Kubernetes commands via 
 kubectl get pods
 ```
 
-The code for building this virtual machine is [available on GitHub](https://github.com/cmu-sei/foundry-appliance)
+The code for building this virtual machine is [available on GitHub](https://github.com/cmu-sei/crucible-appliance)
 
 The appliance runs all of the apps in a single-host Kubernetes cluster provided by [K3s](https://k3s.io/). This provides a starting point for production-ready deployments in a datacenter or cloud.
 

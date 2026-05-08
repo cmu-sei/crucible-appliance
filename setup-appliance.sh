@@ -88,10 +88,6 @@ cp /tmp/k-alias/[h,k]* /usr/local/bin
 helm_repos=(
   "jetstack https://charts.jetstack.io"
   "sei https://helm.cmusei.dev/charts"
-  "kvaps https://kvaps.github.io/charts"
-  "ingress-nginx https://kubernetes.github.io/ingress-nginx"
-  "runix https://helm.runix.net"
-  "cloudnative-pg https://cloudnative-pg.github.io/charts"
 )
 for repo in "${helm_repos[@]}"; do
   sudo -u $SSH_USERNAME helm repo add $repo

@@ -40,15 +40,17 @@ The following apps are deployed on the appliance, all accessible under `https://
 
 ## Helm Charts
 
-The appliance uses a two-chart deployment model installed into the `crucible` namespace:
+The appliance uses a three-chart deployment model installed into the `crucible` namespace:
 
-1. **`infra`** — Infrastructure chart; installs cert-manager (self-signed CA), ingress-nginx, PostgreSQL, NFS storage provisioner, pgAdmin, and all pre-created secrets.
-2. **`crucible`** — Application chart; wraps the upstream `sei/crucible` chart (Keycloak + all Crucible apps) along with Gitea and MkDocs as subchart dependencies.
+1. **`operators`** — Operator prerequisites; installs the Keycloak Operator and CloudNative-PG cluster-wide.
+2. **`infra`** — Infrastructure chart; installs cert-manager (self-signed CA), ingress-nginx, PostgreSQL, NFS storage provisioner, pgAdmin, and all pre-created secrets.
+3. **`crucible`** — Application chart; wraps the upstream `sei/crucible-apps` chart (Keycloak + all Crucible apps) along with Gitea and MkDocs as subchart dependencies.
 
 To upgrade the charts after modifying values or templates on a deployed appliance:
 
 ```bash
-helm upgrade -n crucible infra /home/crucible/charts/infra
+helm upgrade -n crucible crucible-operators /home/crucible/charts/operators
+helm upgrade -n crucible crucible-infra /home/crucible/charts/infra
 helm upgrade -n crucible crucible /home/crucible/charts/crucible --set global.version=$(cat /etc/appliance_version)
 ```
 
@@ -69,7 +71,7 @@ To build the appliance using Proxmox, create a file named `proxmox.auto.pkrvars.
 
 ```
 proxmox_url      = "https://<proxmox.fqdn>:8006/api2/json" # replace with your PVE server
-proxmox_user     = "root@pam"
+proxmox_username = "root@pam"
 proxmox_password = "<password>"
 proxmox_node     = "pve.lan" # replace with the Proxmox node name that should build the appliance
 ```

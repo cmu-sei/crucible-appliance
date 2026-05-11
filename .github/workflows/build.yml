@@ -27,6 +27,8 @@ jobs:
           sudo apt-get install -y xmlstarlet qemu-system-x86 qemu-utils
 
       - name: Initialize Packer
+        env:
+          PACKER_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: packer init crucible-appliance.pkr.hcl
 
       - name: Build QEMU image

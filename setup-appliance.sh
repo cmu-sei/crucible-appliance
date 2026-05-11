@@ -96,6 +96,7 @@ sudo -u $SSH_USERNAME helm repo update
 sudo -u $SSH_USERNAME helm dependency build ~/charts/operators
 sudo -u $SSH_USERNAME helm dependency build ~/charts/infra
 sudo -u $SSH_USERNAME helm dependency build ~/charts/crucible
+sudo -u $SSH_USERNAME helm dependency build ~/charts/crucible/charts/gitea
 
 # Customize MOTD and other text for the appliance
 chmod -x /etc/update-motd.d/00-header

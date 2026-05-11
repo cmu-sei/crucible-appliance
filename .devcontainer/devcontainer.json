@@ -13,7 +13,7 @@
         "ghcr.io/devcontainers/features/common-utils:2": {
             "configureZshAsDefaultShell": true
         },
-        "ghcr.io/devcontainers/features/github-cli:1": {},
+        "ghcr.io/devcontainers/features/github-cli:1": {}
     },
     "containerEnv": {
         "CLAUDE_CODE_USE_BEDROCK": "1", // vars for Claude Code using Amazon Bedrock
@@ -44,7 +44,7 @@
                 "editor.formatOnSave": true,
                 "files.insertFinalNewline": true,
                 "files.eol": "\n",
-                "files.trimTrailingWhitespace": true,
+                "files.trimTrailingWhitespace": true
             }
         }
     }

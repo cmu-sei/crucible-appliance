@@ -3,7 +3,7 @@
 ### Part One: Appliance Setup
 
 1. Download the latest release of the appliance from:
-   [https://github.com/cmu-sei/foundry-appliance](https://github.com/cmu-sei/foundry-appliance)
+   [https://github.com/cmu-sei/crucible-appliance](https://github.com/cmu-sei/crucible-appliance)
 
 2. Import the appliance into Proxmox:
    - Log in to the Proxmox web interface.

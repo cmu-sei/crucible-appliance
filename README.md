@@ -6,7 +6,7 @@ A virtual appliance for building cyber labs, challenges and competitions
 
 Crucible Appliance is a virtual machine that integrates cyber workforce development apps from the [Software Engineering Institute](https://www.sei.cmu.edu) at [Carnegie Mellon University](https://www.cmu.edu).
 
-This project builds the virtual appliance using Ubuntu and [K3s](https://k3s.io/)&mdash;a lightweight Kubernetes environment. Pre-built OVA images are also available under [Releases](https://github.com/cmu-sei/foundry-appliance/releases).
+This project builds the virtual appliance using Ubuntu and [K3s](https://k3s.io/)&mdash;a lightweight Kubernetes environment. Pre-built OVA images are also available under [Releases](https://github.com/cmu-sei/crucible-appliance/releases).
 
 ## Getting Started
 
@@ -21,22 +21,22 @@ password: crucible
 
 The following apps are deployed on the appliance, all accessible under `https://crucible.local`:
 
-| App | Path | Description |
-|-----|------|-------------|
-| [Keycloak](https://www.keycloak.org/) | `/keycloak` | OIDC identity provider |
-| [TopoMojo](https://github.com/cmu-sei/topomojo) | `/topomojo` | Virtual lab builder and player |
-| [Gameboard](https://github.com/cmu-sei/gameboard) | `/gameboard` | Competition manager |
-| [Player](https://github.com/cmu-sei/crucible/wiki/player) | `/player` | Exercise presentation platform |
-| [Alloy](https://github.com/cmu-sei/crucible/wiki/alloy) | `/alloy` | Just-in-time lab deployment |
-| [Blueprint](https://github.com/cmu-sei/crucible/wiki/blueprint) | `/blueprint` | Exercise template editor |
-| [Caster](https://github.com/cmu-sei/crucible/wiki/caster) | `/caster` | Infrastructure-as-code environment |
-| [CITE](https://github.com/cmu-sei/crucible/wiki/cite) | `/cite` | Incident tabletop evaluator |
-| [Gallery](https://github.com/cmu-sei/crucible/wiki/gallery) | `/gallery` | Information feed and reporting |
-| [Steamfitter](https://github.com/cmu-sei/crucible/wiki/steamfitter) | `/steamfitter` | Scripted scenario automation |
-| [Moodle](https://moodle.org/) | `/moodle` | Learning management system |
-| [Gitea](https://gitea.io/) | `/gitea` | Git server for content hosting |
-| [MkDocs](https://www.mkdocs.org/) | `/start` | Documentation site |
-| [pgAdmin](https://www.pgadmin.org/) | `/pgadmin` | PostgreSQL database management |
+| App                                                                 | Path           | Description                        |
+| ------------------------------------------------------------------- | -------------- | ---------------------------------- |
+| [Keycloak](https://www.keycloak.org/)                               | `/keycloak`    | OIDC identity provider             |
+| [TopoMojo](https://github.com/cmu-sei/topomojo)                     | `/topomojo`    | Virtual lab builder and player     |
+| [Gameboard](https://github.com/cmu-sei/gameboard)                   | `/gameboard`   | Competition manager                |
+| [Player](https://github.com/cmu-sei/crucible/wiki/player)           | `/player`      | Exercise presentation platform     |
+| [Alloy](https://github.com/cmu-sei/crucible/wiki/alloy)             | `/alloy`       | Just-in-time lab deployment        |
+| [Blueprint](https://github.com/cmu-sei/crucible/wiki/blueprint)     | `/blueprint`   | Exercise template editor           |
+| [Caster](https://github.com/cmu-sei/crucible/wiki/caster)           | `/caster`      | Infrastructure-as-code environment |
+| [CITE](https://github.com/cmu-sei/crucible/wiki/cite)               | `/cite`        | Incident tabletop evaluator        |
+| [Gallery](https://github.com/cmu-sei/crucible/wiki/gallery)         | `/gallery`     | Information feed and reporting     |
+| [Steamfitter](https://github.com/cmu-sei/crucible/wiki/steamfitter) | `/steamfitter` | Scripted scenario automation       |
+| [Moodle](https://moodle.org/)                                       | `/moodle`      | Learning management system         |
+| [Gitea](https://gitea.io/)                                          | `/gitea`       | Git server for content hosting     |
+| [MkDocs](https://www.mkdocs.org/)                                   | `/start`       | Documentation site                 |
+| [pgAdmin](https://www.pgadmin.org/)                                 | `/pgadmin`     | PostgreSQL database management     |
 
 ## Helm Charts
 

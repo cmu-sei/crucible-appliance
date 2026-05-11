@@ -81,7 +81,7 @@ jobs:
           az cloud set --name AzureUSGovernment
           az storage blob upload --file ${{ env.build_name }}.ova \
                                  --container-name ova \
-                                 --name appliance/${{ env.build_name }}.ova \
+                                 --name crucible-appliance/${{ env.build_name }}.ova \
                                  --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
                                  --no-progress
 
@@ -89,7 +89,7 @@ jobs:
         run: |
           URL=$(az storage blob url \
             --container-name ova \
-            --name appliance/${{ env.build_name }}.ova \
+            --name crucible-appliance/${{ env.build_name }}.ova \
             --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
             -o tsv)
           echo "OVA uploaded to: $URL"

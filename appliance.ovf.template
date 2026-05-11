@@ -38,18 +38,18 @@
       <Item>
         <rasd:AllocationUnits>hertz * 10^6</rasd:AllocationUnits>
         <rasd:Description>Number of Virtual CPUs</rasd:Description>
-        <rasd:ElementName>2 virtual CPU(s)</rasd:ElementName>
+        <rasd:ElementName>{{CPU_COUNT}} virtual CPU(s)</rasd:ElementName>
         <rasd:InstanceID>1</rasd:InstanceID>
         <rasd:ResourceType>3</rasd:ResourceType>
-        <rasd:VirtualQuantity>2</rasd:VirtualQuantity>
+        <rasd:VirtualQuantity>{{CPU_COUNT}}</rasd:VirtualQuantity>
       </Item>
       <Item>
         <rasd:AllocationUnits>byte * 2^20</rasd:AllocationUnits>
         <rasd:Description>Memory Size</rasd:Description>
-        <rasd:ElementName>8192MB of memory</rasd:ElementName>
+        <rasd:ElementName>{{MEMORY_MB}}MB of memory</rasd:ElementName>
         <rasd:InstanceID>2</rasd:InstanceID>
         <rasd:ResourceType>4</rasd:ResourceType>
-        <rasd:VirtualQuantity>8192</rasd:VirtualQuantity>
+        <rasd:VirtualQuantity>{{MEMORY_MB}}</rasd:VirtualQuantity>
       </Item>
       <Item>
         <rasd:AddressOnParent>0</rasd:AddressOnParent>

@@ -38,6 +38,15 @@ The following apps are deployed on the appliance, all accessible under `https://
 | [MkDocs](https://www.mkdocs.org/)                                   | `/start`       | Documentation site                 |
 | [pgAdmin](https://www.pgadmin.org/)                                 | `/pgadmin`     | PostgreSQL database management     |
 
+You can toggle which apps you want enabled by setting `enabled: false` for apps that you do not want deployed in the [Crucible values.yaml](crucible/charts/crucible/values.yaml). On a deployed appliance, edit `/home/crucible/charts/crucible/values.yaml` and then apply the change:
+
+```bash
+cd /home/crucible/charts/crucible
+helm upgrade -n crucible crucible . --set global.version=$(cat /etc/appliance_version)
+```
+
+If the appliance is resource-constrained, disable unused apps or increase the VM's CPU/RAM.
+
 ## Helm Charts
 
 The appliance uses a three-chart deployment model installed into the `crucible` namespace:

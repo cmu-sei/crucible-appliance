@@ -82,7 +82,7 @@ $RUN_AS_USER kubectl create configmap crucible-ca-cert --from-file=ca.crt=/tmp/c
 rm -f /tmp/ca.crt
 
 # 3. Install crucible chart (Keycloak via operator, all Crucible apps, Gitea, MkDocs)
-$RUN_AS_USER helm install crucible $CHARTS_DIR/crucible --set global.version=$APPLIANCE_VERSION
+$RUN_AS_USER helm install crucible $CHARTS_DIR/crucible --set global.version=$APPLIANCE_VERSION --wait --timeout 15m
 
 # Create flag file
 date > $FLAG

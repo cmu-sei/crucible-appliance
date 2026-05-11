@@ -54,9 +54,10 @@ fi
 # Install Tailscale for remote access
 curl -fsSL https://tailscale.com/install.sh | sh
 
-# Enable external PostgreSQL access
-sed -i -r "s/#(5432:)/\1/" ~/crucible/ingress-nginx.values.yaml
-helm upgrade -n crucible -f ~/crucible/ingress-nginx.values.yaml ingress-nginx ingress-nginx/ingress-nginx
+# Enable external PostgreSQL access via the ingress-nginx TCP configmap
+kubectl -n crucible patch configmap crucible-infra-ingress-nginx-controller \
+    --type merge -p '{"data":{"5432":"crucible/crucible-infra-postgresql-rw:5432"}}'
+kubectl -n crucible rollout restart deployment crucible-infra-ingress-nginx-controller
 
 # Install VS Code
 sudo apt-get install -y code

@@ -63,10 +63,12 @@ jobs:
           # Generate OVF from template
           disk_file="${build_name}-disk001.vmdk"
           disk_size=$(stat --format=%s "output-ova/$disk_file")
+          disk_capacity=$(grep 'disk_size_virtualbox' crucible-appliance.pkr.hcl | grep -o '[0-9]*')
+          disk_capacity_gb=$(( disk_capacity / 1000 ))
           sed -e "s/{{VM_NAME}}/${build_name}/g" \
               -e "s/{{DISK_FILENAME}}/${disk_file}/g" \
               -e "s/{{DISK_SIZE}}/${disk_size}/g" \
-              -e "s/{{DISK_CAPACITY}}/40/g" \
+              -e "s/{{DISK_CAPACITY}}/${disk_capacity_gb}/g" \
               appliance.ovf.template > output-ova/${build_name}.ovf
 
           # Create manifest and package OVA

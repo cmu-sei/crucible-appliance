@@ -87,7 +87,7 @@ cp /tmp/k-alias/[h,k]* /usr/local/bin
 # Add Helm chart repositories and build dependencies
 helm_repos=(
   "jetstack https://charts.jetstack.io"
-  "sei https://helm.cmusei.dev/charts"
+  "sei https://cmu-sei.github.io/helm-charts"
 )
 for repo in "${helm_repos[@]}"; do
   sudo -u $SSH_USERNAME helm repo add $repo

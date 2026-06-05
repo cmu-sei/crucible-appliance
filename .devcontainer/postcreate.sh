@@ -19,6 +19,6 @@ prompt pure
 psvar[13]=''  # set Pure prompt username to blank
 EOF
 
-helm repo add sei https://helm.cmusei.dev/charts
+helm repo add sei https://cmu-sei.github.io/helm-charts
 helm repo add jetstack https://charts.jetstack.io
 helm repo update

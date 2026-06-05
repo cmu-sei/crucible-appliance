@@ -10,5 +10,5 @@ dependencies:
     version: v1.20.0
 
   - name: crucible-infra
-    repository: https://helm.cmusei.dev/charts
+    repository: https://cmu-sei.github.io/helm-charts
     version: 0.1.0

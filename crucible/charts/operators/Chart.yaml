@@ -6,5 +6,5 @@ version: 0.0.0
 
 dependencies:
   - name: crucible-operators
-    repository: https://helm.cmusei.dev/charts
+    repository: https://cmu-sei.github.io/helm-charts
     version: 0.1.0

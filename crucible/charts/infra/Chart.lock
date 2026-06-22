@@ -1,0 +1,9 @@
+dependencies:
+- name: cert-manager
+  repository: https://charts.jetstack.io
+  version: v1.20.0
+- name: crucible-infra
+  repository: https://cmu-sei.github.io/helm-charts
+  version: 0.1.0
+digest: sha256:d7a769660ed60a5be1fb47725000e3acb25cc93a073580c0a068a6a64050469e
+generated: "2026-06-05T16:42:38.136552553Z"

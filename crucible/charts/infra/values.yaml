@@ -1,0 +1,92 @@
+global:
+  domain: crucible.local
+
+# ---------------------------------------------------------------------------
+# cert-manager with self-signed CA chain
+# Creates the `crucible-cert` TLS secret used by all ingresses on the appliance
+# https://artifacthub.io/packages/helm/cert-manager/cert-manager
+# ---------------------------------------------------------------------------
+certificateAuthority:
+  commonName: Crucible Appliance CA
+  organization: Carnegie Mellon University
+  organizationalUnit: Software Engineering Institute
+
+# ---------------------------------------------------------------------------
+# Upstream sei/crucible-infra chart
+# Provides: CNPG PostgreSQL Cluster, ingress-nginx, NFS provisioner + PVCs, pgAdmin
+# https://github.com/cmu-sei/helm-charts/tree/main/charts/crucible-infra
+# ---------------------------------------------------------------------------
+crucible-infra:
+  global:
+    domain: "{{ .Values.global.domain }}"
+
+  tls:
+    create: false
+    secretName: crucible-cert
+
+  nfs:
+    namePrefix: crucible
+    storageClassName: nfs
+    topomojoSize: 5Gi
+    gameboardSize: 5Gi
+    casterSize: 5Gi
+
+  nfs-server-provisioner:
+    enabled: true
+    persistence:
+      enabled: true
+
+  ingress-nginx:
+    enabled: true
+    controller:
+      config:
+        hsts: "false"
+        annotations-risk-level: critical
+      allowSnippetAnnotations: true
+      # Expose NFS over the LoadBalancer so the nfs-server-provisioner PVCs can mount
+      # on boot.
+    tcp:
+      2049: "{{ .Release.Namespace }}/{{ .Release.Name }}-nfs-server-provisioner:2049"
+
+  postgresql:
+    enabled: true
+    instances: 1
+    persistence:
+      size: 1Gi
+      storageClass: local-path
+    # Databases/users provisioned at CNPG cluster bootstrap. "gitea" is added
+    # on top of the defaults; all other databases correspond to Crucible apps.
+    databases:
+      - name: keycloak
+      - name: alloy
+      - name: blueprint
+      - name: caster
+      - name: cite
+      - name: gallery
+      - name: gameboard
+      - name: player
+      - name: player_vm
+      - name: player_vm_logging
+        owner: player_vm
+      - name: steamfitter
+      - name: topomojo
+      - name: moodle
+      - name: gitea
+
+  pgadmin4:
+    enabled: true
+    env:
+      email: admin@crucible.local
+      contextPath: /pgadmin
+    ingress:
+      enabled: true
+      ingressClassName: nginx
+      hosts:
+        - host: "{{ .Values.global.domain }}"
+          paths:
+            - path: /pgadmin
+              pathType: Prefix
+      tls:
+        - hosts:
+            - "{{ .Values.global.domain }}"
+          secretName: crucible-cert

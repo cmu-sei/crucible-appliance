@@ -4,7 +4,7 @@
 # Released under a BSD (SEI)-style license, please see LICENSE.md in the
 # project root or contact permission@sei.cmu.edu for full terms.
 #
-# Foundry Appliance Setup
+# Crucible Appliance Setup
 #
 
 # Exit on errors
@@ -21,30 +21,48 @@ rm ~/scripts/expand-volume.sh
 swapoff -a
 sed -i -r 's/(\/swap\.img.*)/#\1/' /etc/fstab
 
+# Suppress cri-containerd and cgroup slice messages from flooding the terminal.
+# K3s/containerd write to /dev/kmsg at ERR level, so console_loglevel must be
+# lower than 4 to suppress them. Level 1 = only KERN_EMERG reaches the console.
+# printk: console_loglevel default_msg_loglevel min_console_loglevel default_console_loglevel
+echo 'kernel.printk = 1 4 1 1' >/etc/sysctl.d/10-console-loglevel.conf
+sysctl -p /etc/sysctl.d/10-console-loglevel.conf
+
+# Set the kernel boot-time console log level via GRUB so messages are suppressed
+# before systemd-sysctl applies the sysctl.d file.
+sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT=.*/GRUB_CMDLINE_LINUX_DEFAULT="quiet loglevel=1"/' /etc/default/grub
+update-grub
+
+# Retry transient network failures. 
+# --retry-all-errors is required because curl does not retry 4xx by default.
+curl_retry() {
+  curl -fsSL --retry 5 --retry-delay 5 --retry-all-errors "$@"
+}
+
 # Add Kubernetes apt repo
 apt-get update
 apt-get install -y apt-transport-https
-curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.32/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+curl_retry https://pkgs.k8s.io/core:/stable:/v1.32/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
 echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.32/deb/ /' | tee /etc/apt/sources.list.d/kubernetes.list
 
 # Add Helm apt repo
-curl -fsSL https://packages.buildkite.com/helm-linux/helm-debian/gpgkey | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
+curl_retry https://packages.buildkite.com/helm-linux/helm-debian/gpgkey | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://packages.buildkite.com/helm-linux/helm-debian/any/ any main" | tee /etc/apt/sources.list.d/helm-stable-debian.list
 
 # Upgrade existing packages to latest
 apt-get update
 apt-get full-upgrade -y
 
-# Add foundry.local to hosts file
-sed -i -r 's/(foundry)$/\1 foundry.local/' /etc/hosts
+# Add crucible.local to hosts file
+sed -i -r 's/(crucible)$/\1 crucible.local/' /etc/hosts
 
 # Add dnsmasq resolver and other required packages
 PRIMARY_INTERFACE=$(ip -o -4 route show to default | awk '{print $5}')
 mkdir /etc/dnsmasq.d
-cat <<EOF >/etc/dnsmasq.d/foundry.conf
+cat <<EOF >/etc/dnsmasq.d/crucible.conf
 bind-interfaces
 listen-address=10.0.1.1
-interface-name=foundry.local,$PRIMARY_INTERFACE
+interface-name=crucible.local,$PRIMARY_INTERFACE
 EOF
 
 cat <<EOF >/etc/netplan/01-loopback.yaml
@@ -72,10 +90,19 @@ apt-get install -y dnsmasq avahi-daemon nfs-common kubectl helm pwgen
 git clone https://github.com/jaggedmountain/k-alias.git /tmp/k-alias
 cp /tmp/k-alias/[h,k]* /usr/local/bin
 
-# Build dependencies for foundry Helm chart
-for chart in infra foundry; do
-  sudo -u $SSH_USERNAME helm dependency build ~/charts/$chart
+# Add Helm chart repositories and build dependencies
+helm_repos=(
+  "jetstack https://charts.jetstack.io"
+  "sei https://cmu-sei.github.io/helm-charts"
+)
+for repo in "${helm_repos[@]}"; do
+  sudo -u $SSH_USERNAME helm repo add $repo
 done
+sudo -u $SSH_USERNAME helm repo update
+sudo -u $SSH_USERNAME helm dependency build ~/charts/operators
+sudo -u $SSH_USERNAME helm dependency build ~/charts/infra
+sudo -u $SSH_USERNAME helm dependency build ~/charts/crucible
+sudo -u $SSH_USERNAME helm dependency build ~/charts/crucible/charts/gitea
 
 # Customize MOTD and other text for the appliance
 chmod -x /etc/update-motd.d/00-header
@@ -83,9 +110,9 @@ chmod -x /etc/update-motd.d/10-help-text
 sed -i -r 's/(ENABLED=)1/\10/' /etc/default/motd-news
 cp ~/scripts/display-banner.sh /etc/update-motd.d/05-display-banner
 rm ~/scripts/display-banner.sh
-echo -e "Foundry Appliance $APPLIANCE_VERSION \\\n \l \n" >/etc/issue
+echo -e "Crucible Appliance $APPLIANCE_VERSION \\\n \l \n" >/etc/issue
 
-# Create systemd services to configure netplan primary interface and install Foundry chart
+# Create systemd services to configure netplan primary interface and install Crucible chart
 cp ~/scripts/configure-nic.sh /usr/local/bin/configure-nic
 rm ~/scripts/configure-nic.sh
 cat <<EOF >/etc/systemd/system/configure-nic.service
@@ -103,25 +130,25 @@ RemainAfterExit=yes
 WantedBy=multi-user.target
 EOF
 
-cp ~/scripts/install-foundry.sh /usr/local/bin/install-foundry
-rm ~/scripts/install-foundry.sh
-cat <<EOF >/etc/systemd/system/install-foundry.service
+cp ~/scripts/install-crucible.sh /usr/local/bin/install-crucible
+rm ~/scripts/install-crucible.sh
+cat <<EOF >/etc/systemd/system/install-crucible.service
 [Unit]
-Description=Install Foundry chart (first boot)
-After=configure-nic.service
+Description=Install Crucible chart (first boot)
+After=configure-nic.service network-online.target
 Requires=network-online.target
 
 [Service]
 Type=oneshot
-ExecStart=install-foundry
-ExecStartPost=/bin/bash -c 'systemctl disable install-foundry.service'
+ExecStart=install-crucible
+ExecStartPost=/bin/bash -c 'systemctl disable install-crucible.service'
 RemainAfterExit=yes
 
 [Install]
 WantedBy=multi-user.target
 EOF
 
-systemctl enable configure-nic install-foundry
+systemctl enable configure-nic install-crucible
 
 # Generate SSH key
 sudo -u $SSH_USERNAME ssh-keygen -t rsa -f ~/.ssh/id_rsa -q -N ''

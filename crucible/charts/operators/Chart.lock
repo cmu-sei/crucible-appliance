@@ -1,0 +1,6 @@
+dependencies:
+- name: crucible-operators
+  repository: https://cmu-sei.github.io/helm-charts
+  version: 0.1.0
+digest: sha256:8334b5c13ea31ac63a8e93cff9bae45694745d3ba30007dd2c723e1eb9ca943b
+generated: "2026-06-05T16:42:35.486748951Z"

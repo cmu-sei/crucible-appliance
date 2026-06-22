@@ -1,5 +1,5 @@
 .DS_Store
-.vscode/
 packer_cache/
 output-*/
+qemu-logs/
 *.pkrvars.hcl

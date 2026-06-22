@@ -1,0 +1,441 @@
+global:
+  domain: crucible.local
+  version: "" # Set at install time from /etc/appliance_version
+
+# ---------------------------------------------------------------------------
+# Upstream sei/crucible-apps chart
+# Provides Keycloak (via operator) + all Crucible applications + Moodle.
+# See https://github.com/cmu-sei/helm-charts/tree/main/charts/crucible-apps
+# ---------------------------------------------------------------------------
+crucible-apps:
+  # Keep subchart resource names as `crucible-*` (matches legacy behavior)
+  fullnameOverride: crucible
+  global:
+    domain: "{{ .Values.global.domain }}"
+    ingress:
+      className: nginx
+    keycloak:
+      basePath: /keycloak
+      realm: crucible
+
+  # Auto-generate realm + OIDC client secrets + admin user. The realm-admin
+  # password is persisted in the `crucible-oidc-client-secrets` Secret across
+  # reinstalls.
+  keycloak:
+    enabled: true
+    createRealm: true
+    realmAdminUsername: crucible
+    realmAdminPassword: crucible
+    realmAdminEmail: administrator@crucible.local
+    ingress:
+      enabled: true
+      ingressClassName: nginx
+      tlsSecretName: crucible-cert
+      annotations:
+        nginx.ingress.kubernetes.io/server-snippet: |
+          location ~ ^/keycloak/?$ {
+            return 302 $scheme://$host/keycloak/admin/crucible/console/;
+          }
+    externalDatabase:
+      host: crucible-infra-postgresql-rw
+      database: keycloak
+      existingSecret: crucible-infra-db-keycloak
+      existingSecretUserKey: username
+      existingSecretPasswordKey: password
+
+  alloy:
+    enabled: true
+    alloy-api:
+      database:
+        host: crucible-infra-postgresql-rw
+        name: alloy
+        existingSecret: crucible-infra-db-alloy
+      resourceOwnerAuthorization:
+        userName: crucible
+        password: crucible
+      ingress:
+        className: nginx
+        tls:
+          - hosts:
+              - "{{ .Values.global.domain }}"
+            secretName: crucible-cert
+    alloy-ui:
+      ingress:
+        className: nginx
+        tls:
+          - hosts:
+              - "{{ .Values.global.domain }}"
+            secretName: crucible-cert
+
+  blueprint:
+    enabled: true
+    blueprint-api:
+      certificateMap: crucible-ca-cert
+      database:
+        host: crucible-infra-postgresql-rw
+        name: blueprint
+        existingSecret: crucible-infra-db-blueprint
+      resourceOwnerAuthorization:
+        userName: crucible
+        password: crucible
+      ingress:
+        className: nginx
+        tls:
+          - hosts:
+              - "{{ .Values.global.domain }}"
+            secretName: crucible-cert
+      env:
+        SSL_CERT_FILE: /usr/local/share/ca-certificates/ca.crt
+        SSL_CERT_DIR: /usr/local/share/ca-certificates
+    blueprint-ui:
+      ingress:
+        className: nginx
+        tls:
+          - hosts:
+              - "{{ .Values.global.domain }}"
+            secretName: crucible-cert
+
+  caster:
+    enabled: true
+    caster-api:
+      certificateMap: crucible-ca-cert
+      database:
+        host: crucible-infra-postgresql-rw
+        name: caster
+        existingSecret: crucible-infra-db-caster
+      client:
+        userName: crucible
+        password: crucible
+      ingress:
+        className: nginx
+        tls:
+          - hosts:
+              - "{{ .Values.global.domain }}"
+            secretName: crucible-cert
+      env:
+        SSL_CERT_FILE: /usr/local/share/ca-certificates/ca.crt
+        SSL_CERT_DIR: /usr/local/share/ca-certificates
+    caster-ui:
+      ingress:
+        className: nginx
+        tls:
+          - hosts:
+              - "{{ .Values.global.domain }}"
+            secretName: crucible-cert
+
+  cite:
+    enabled: true
+    cite-api:
+      certificateMap: crucible-ca-cert
+      database:
+        host: crucible-infra-postgresql-rw
+        name: cite
+        existingSecret: crucible-infra-db-cite
+      ingress:
+        className: nginx
+        tls:
+          - hosts:
+              - "{{ .Values.global.domain }}"
+            secretName: crucible-cert
+      env:
+        SSL_CERT_FILE: /usr/local/share/ca-certificates/ca.crt
+        SSL_CERT_DIR: /usr/local/share/ca-certificates
+    cite-ui:
+      ingress:
+        className: nginx
+        tls:
+          - hosts:
+              - "{{ .Values.global.domain }}"
+            secretName: crucible-cert
+
+  gallery:
+    enabled: true
+    gallery-api:
+      certificateMap: crucible-ca-cert
+      database:
+        host: crucible-infra-postgresql-rw
+        name: gallery
+        existingSecret: crucible-infra-db-gallery
+      ingress:
+        className: nginx
+        tls:
+          - hosts:
+              - "{{ .Values.global.domain }}"
+            secretName: crucible-cert
+      env:
+        SSL_CERT_FILE: /usr/local/share/ca-certificates/ca.crt
+        SSL_CERT_DIR: /usr/local/share/ca-certificates
+    gallery-ui:
+      ingress:
+        className: nginx
+        tls:
+          - hosts:
+              - "{{ .Values.global.domain }}"
+            secretName: crucible-cert
+
+  gameboard:
+    enabled: true
+    gameboard-api:
+      certificateMap: crucible-ca-cert
+      database:
+        host: crucible-infra-postgresql-rw
+        name: gameboard
+        existingSecret: crucible-infra-db-gameboard
+      ingress:
+        className: nginx
+        tls:
+          - hosts:
+              - "{{ .Values.global.domain }}"
+            secretName: crucible-cert
+      env:
+        Oidc__Authority: "https://{{ .Values.global.domain }}/keycloak/realms/crucible"
+    gameboard-ui:
+      ingress:
+        className: nginx
+        tls:
+          - hosts:
+              - "{{ .Values.global.domain }}"
+            secretName: crucible-cert
+      settingsYaml:
+        consoleForgeConfig:
+          defaultConsoleType: proxmox
+          logThreshold: 2
+
+  player:
+    enabled: true
+    player-api:
+      certificateMap: crucible-ca-cert
+      database:
+        host: crucible-infra-postgresql-rw
+        name: player
+        existingSecret: crucible-infra-db-player
+      ingress:
+        className: nginx
+        tls:
+          - hosts:
+              - "{{ .Values.global.domain }}"
+            secretName: crucible-cert
+      env:
+        SSL_CERT_FILE: /usr/local/share/ca-certificates/ca.crt
+        SSL_CERT_DIR: /usr/local/share/ca-certificates
+    player-ui:
+      ingress:
+        className: nginx
+        tls:
+          - hosts:
+              - "{{ .Values.global.domain }}"
+            secretName: crucible-cert
+    vm-api:
+      certificateMap: crucible-ca-cert
+      database:
+        host: crucible-infra-postgresql-rw
+        name: player_vm
+        existingSecret: crucible-infra-db-player-vm
+      ingress:
+        className: nginx
+        tls:
+          - hosts:
+              - "{{ .Values.global.domain }}"
+            secretName: crucible-cert
+    vm-ui:
+      ingress:
+        className: nginx
+        tls:
+          - hosts:
+              - "{{ .Values.global.domain }}"
+            secretName: crucible-cert
+    console-ui:
+      ingress:
+        className: nginx
+        tls:
+          - hosts:
+              - "{{ .Values.global.domain }}"
+            secretName: crucible-cert
+
+  steamfitter:
+    enabled: true
+    steamfitter-api:
+      certificateMap: crucible-ca-cert
+      database:
+        host: crucible-infra-postgresql-rw
+        name: steamfitter
+        existingSecret: crucible-infra-db-steamfitter
+      resourceOwnerAuthorization:
+        userName: crucible
+        password: crucible
+      ingress:
+        className: nginx
+        tls:
+          - hosts:
+              - "{{ .Values.global.domain }}"
+            secretName: crucible-cert
+      env:
+        SSL_CERT_FILE: /usr/local/share/ca-certificates/ca.crt
+        SSL_CERT_DIR: /usr/local/share/ca-certificates
+    steamfitter-ui:
+      ingress:
+        className: nginx
+        tls:
+          - hosts:
+              - "{{ .Values.global.domain }}"
+            secretName: crucible-cert
+
+  topomojo:
+    enabled: true
+    topomojo-api:
+      certificateMap: crucible-ca-cert
+      database:
+        host: crucible-infra-postgresql-rw
+        name: topomojo
+        existingSecret: crucible-infra-db-topomojo
+      ingress:
+        className: nginx
+        tls:
+          - hosts:
+              - "{{ .Values.global.domain }}"
+            secretName: crucible-cert
+      env:
+        Oidc__Authority: "https://{{ .Values.global.domain }}/keycloak/realms/crucible"
+        Oidc__MetadataAddress: "https://{{ .Values.global.domain }}/keycloak/realms/crucible/.well-known/openid-configuration"
+        OpenApi__Client__AuthorizationUrl: "https://{{ .Values.global.domain }}/keycloak/realms/crucible/protocol/openid-connect/auth"
+        OpenApi__Client__TokenUrl: "https://{{ .Values.global.domain }}/keycloak/realms/crucible/protocol/openid-connect/token"
+        Oidc__UserRolesClaimPath: realm_access.roles
+        Oidc__UserRolesClaimMap__administrator: Administrator
+        # Hypervisor "Pod" configuration is optional. Uncomment and configure
+        # for your hypervisor. Supports both vSphere and Proxmox via the
+        # Pod__HypervisorType switch.
+        # Pod__HypervisorType: "Proxmox"  # Options: "Vsphere" or "Proxmox"
+        # Pod__Url: ""
+        # Pod__User: ""
+        # Pod__Password: ""
+        # Pod__ConsoleUrl: "https://{{ "{{" }} .Values.global.domain {{ "}}" }}/console"
+        # Pod__PoolPath: ""
+        # Pod__Uplink: "vSwitch0"
+        # Pod__VmStore: ""
+        # Pod__IsoStore: ""
+        # Pod__DiskStore: ""
+        # Pod__TicketUrlHandler: "querystring"
+        # Pod__Vlan__Range: ""
+        # Pod__KeepAliveMinutes: 10
+        # Pod__DebugVerbose: false
+    topomojo-ui:
+      ingress:
+        className: nginx
+        tls:
+          - hosts:
+              - "{{ .Values.global.domain }}"
+            secretName: crucible-cert
+
+  moodle:
+    enabled: true
+    moodle:
+      site:
+        url: "https://{{ .Values.global.domain }}"
+      database:
+        host: crucible-infra-postgresql-rw
+        name: moodle
+        user: moodle
+        existingSecret: crucible-infra-db-moodle
+        existingSecretUserKey: username
+        existingSecretPasswordKey: password
+      oidc:
+        enabled: true
+        discoveryUrl: "https://{{ .Values.global.domain }}/keycloak/realms/crucible/.well-known/openid-configuration"
+        existingSecret: crucible-moodle
+        caCert:
+          existingConfigMap: crucible-ca-cert
+          key: ca.crt
+          path: /opt/sei/certs/ca.crt
+    extraEnvVars:
+      - name: SSL_CERT_FILE
+        value: /opt/sei/certs/ca.crt
+      - name: CURL_CA_BUNDLE
+        value: /opt/sei/certs/ca.crt
+    ingress:
+      hostname: "{{ .Values.global.domain }}"
+      path: /
+      pathType: Prefix
+      tls:
+        - hosts:
+            - "{{ .Values.global.domain }}"
+          secretName: crucible-cert
+
+# ---------------------------------------------------------------------------
+# Gitea - Git server at /gitea
+# ---------------------------------------------------------------------------
+gitea:
+  global:
+    security:
+      allowInsecureImages: true
+  adminUsername: crucible
+  adminEmail: administrator@crucible.local
+  appName: Crucible Gitea
+  rootURL: "https://{{ .Values.global.domain }}/gitea"
+  updateStrategy:
+    type: Recreate
+  existingSecret: crucible-infra-gitea-admin
+  extraEnvVars:
+    - name: BITNAMI_EXTRA_CA_CERTIFICATES
+      value: /etc/ssl/certs/ca-cert.crt
+  extraEnvVarsCM: "{{ .Release.Name }}-gitea-env"
+  extraVolumes:
+    - name: ca-cert
+      secret:
+        secretName: crucible-infra-ca
+  extraVolumeMounts:
+    - name: ca-cert
+      mountPath: /etc/ssl/certs/ca-cert.crt
+      subPath: ca.crt
+      readOnly: true
+  persistence:
+    storageClass: local-path
+    size: 1Gi
+  service:
+    type: ClusterIP
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    hostname: "{{ .Values.global.domain }}"
+    path: /gitea(/|$)(.*)
+    annotations:
+      nginx.ingress.kubernetes.io/rewrite-target: /$2
+    tls: true
+    extraTls:
+      - hosts:
+          - "{{ .Values.global.domain }}"
+        secretName: crucible-cert
+  postgresql:
+    enabled: false
+  externalDatabase:
+    host: crucible-infra-postgresql-rw
+    user: gitea
+    database: gitea
+    existingSecret: crucible-infra-db-gitea
+    existingSecretPasswordKey: password
+
+# ---------------------------------------------------------------------------
+# MkDocs Material - Documentation site at /start
+# ---------------------------------------------------------------------------
+mkdocs-material:
+  ingress:
+    enabled: true
+    className: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/app-root: /start
+      nginx.ingress.kubernetes.io/rewrite-target: /$2
+      nginx.ingress.kubernetes.io/configuration-snippet: |
+        rewrite ^(/start)$ $1/ redirect;
+    hosts:
+      - host: "{{ .Values.global.domain }}"
+        paths:
+          - path: /start(/|$)(.*)
+            pathType: ImplementationSpecific
+    tls:
+      - hosts:
+          - "{{ .Values.global.domain }}"
+        secretName: crucible-cert
+  storage:
+    size: 100M
+    class: local-path
+  giturl: "http://{{ .Release.Name }}-gitea/crucible/mkdocs"
+  pollInterval: 1

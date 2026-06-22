@@ -10,12 +10,38 @@ This project builds the virtual appliance using Ubuntu and [K3s](https://k3s.io/
 
 ## Getting Started
 
-After deploying the appliance, visit https://crucible.local to begin using the apps. Or login using the VM console:
+Download a pre-built OVA from [Releases](https://github.com/cmu-sei/crucible-appliance/releases), then import it into your hypervisor.
+
+### Deploy on Proxmox
+
+1. In the Proxmox **Datacenter** view, select **Storage**. You need a storage volume that allows the **Disk Image** and **Import** content types (for example, a volume named `Import`).
+2. Open that storage volume and choose **Import > Download from URL**, then paste the OVA URL so Proxmox downloads it. (Alternatively, copy the OVA directly into the folder the datastore points to on disk instead of downloading through Proxmox.)
+3. Once the OVA appears in the Import volume, select it and click **Import** to create a VM. Accept the default settings in the dialog, then power on the VM.
+4. Open the VM **Console** and run `ip a | less` to find the IP address assigned to the VM.
+
+> **Note:** See the [Proxmox documentation on Importing VMs for more details](https://pve.proxmox.com/pve-docs/pve-admin-guide.html#qm_import_virtual_machines).
+
+### Access the appliance
+
+If your network does not resolve `.local` domains automatically, add a hosts file entry mapping `crucible.local` to the VM's IP address:
+
+- **Linux/macOS:** edit `/etc/hosts`
+- **Windows:** edit `C:\Windows\System32\drivers\etc\hosts`
+
+```
+<vm-ip-address>  crucible.local
+```
+
+Then visit https://crucible.local to begin using the apps. The appliance uses a self-signed certificate, so your browser will warn about the connection the first time — accept it to continue.
+
+You can log in to the VM console with credentials:
 
 ```
 username: crucible
 password: crucible
 ```
+
+> **Note:** On first boot the appliance installs K3s and deploys the full application stack via Helm. This can take several minutes after the VM powers on before https://crucible.local responds. You can check K3s deployment status using the command `kubectl get pods` (or the `kls` [k-alias](https://github.com/jaggedmountain/k-alias) command) and waiting for all Crucible pods to be listed as "Running".
 
 ## Apps
 

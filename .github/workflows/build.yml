@@ -11,6 +11,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-24.04
+    outputs:
+      ova_sha256: ${{ steps.integrity_check.outputs.sha256 }}
+      ova_url: ${{ steps.log_ova_url.outputs.url }}
 
     steps:
       - uses: actions/checkout@v6
@@ -80,6 +83,13 @@ jobs:
           openssl sha256 *.ovf *.vmdk > ${build_name}.mf
           tar -cvf ../${build_name}.ova --format=ustar ${build_name}{.ovf,-disk001.vmdk,.mf}
 
+      - name: OVA Integrity Check
+        id: integrity_check
+        run: |
+          sha256=$(sha256sum ${{ env.build_name }}.ova | awk '{print $1}')
+          echo "sha256=$sha256" >> $GITHUB_OUTPUT
+          echo "SHA256: $sha256  ${{ env.build_name }}.ova"
+
       - name: Upload OVA to Azure Storage
         run: |
           az cloud set --name AzureUSGovernment
@@ -90,16 +100,20 @@ jobs:
                                  --no-progress
 
       - name: Log OVA URL
+        id: log_ova_url
         run: |
           URL=$(az storage blob url \
             --container-name ova \
             --name crucible-appliance/${{ env.build_name }}.ova \
             --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
             -o tsv)
+          echo "url=$URL" >> $GITHUB_OUTPUT
           echo "OVA uploaded to: $URL"
 
           {
             echo "### :package: Appliance image uploaded"
             echo ""
             echo "\`${URL}\`"
+            echo ""
+            echo "**SHA256:** \`${{ steps.integrity_check.outputs.sha256 }}\`"
           } >> "$GITHUB_STEP_SUMMARY"
